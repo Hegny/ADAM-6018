@@ -1,5 +1,6 @@
 # ADAM-6018
 EPICS drivers for ADAM-6018+ MODBUS thermocouple DAQ module
+
 2023 Yegor "Hegny" Tamashevich
 
 The project contains:
@@ -35,14 +36,14 @@ There are also commented out examples for a simple readout of the raw values wit
 
 # III. Notes
 Adam-6018+ does not provide temperature values outside the range predefined for each thermocouple type.
-# Type Code  LO T  HI T
-# J    1024  0     760
-# K    1056  0     1370
-# T    1088  -100  400
-# E    1120  0     1000
-# R    1152  500   1750
-# S    1184  500   1750
-# B    1216  500   1800
+ Type Code  LO T  HI T
+ J    1024  0     760
+ K    1056  0     1370
+ T    1088  -100  400
+ E    1120  0     1000
+ R    1152  500   1750
+ S    1184  500   1750
+ B    1216  500   1800
 It means, there is no way to measure directly, for example, temperatures below 0C with K-type thermocouple.
 
 To change the thermocouple type you can use CSS Display or directly put desired Type Code in (P)(R)TypeSet_(N) variable. 
