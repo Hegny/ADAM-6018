@@ -1,0 +1,157 @@
+# Macros:
+# P - Record prefix
+# R - Device name
+# N - Channel number
+# PORT1, PORT2, PORT3 - asyn modbus support port name
+# OFFSET - Bit number (offset from 0)
+# DATA_TYPE
+# SCAN
+
+###### MODBUS COMMUNICATION ######
+#raw 16-bit data
+# longin record template for register inputs
+record(longin,"${P}${R}CH_${N}") {
+    field(DTYP,"asynInt32")
+    field(INP,"@asyn(${PORT1} ${OFFSET})${DATA_TYPE}")
+    field(SCAN, "${SCAN}")
+}
+
+#Thermocouple Type read
+record(longin,"${P}${R}TypeGet_${N}") {
+    field(DTYP,"asynInt32")
+    field(INP,"@asyn(${PORT2} ${OFFSET})${DATA_TYPE}")
+    field(SCAN, "${SCAN}")
+}
+
+#Thermocouple Type set
+# longout record template for register inputs
+record(longout,"${P}${R}TypeSet_${N}") {
+    field(DTYP,"asynInt32")
+    field(OUT,"@asyn($(PORT3) $(OFFSET))$(DATA_TYPE)")
+    field(PINI,"$(PINI=NO)")
+}
+
+###### CALCULATIONS ######
+
+#choose the type of the thermocouple
+record(calc, "${P}${R}Type_${N}")
+{
+        field(INPA, "${P}${R}TypeGet_${N} CP")
+        field(INPB, "1")
+        field(CALC, "(A=1024)*1+(A=1056)*2+(A=1088)*3+(A=1120)*4+(A=1152)*5+(A=1184)*6+(A=1216)*7")
+
+}
+
+# J    1024  0     760
+# K    1056  0     1370
+# T    1088  -100  400
+# E    1120  0     1000
+# R    1152  500   1750
+# S    1184  500   1750
+# B    1216  500   1800
+
+#choose low temperature limit for the thermocouple type
+record(sel, "${P}${R}LO_${N}")
+{
+        field(NVL, "${P}${R}Type_${N} CP")        
+        field(SELM, "Specified")   
+	field(INPA, "0")
+	field(INPB, "0")
+	field(INPC, "0")
+	field(INPD, "-100")
+	field(INPE, "0")
+	field(INPF, "500")
+	field(INPG, "500")	
+	field(INPH, "500")	
+        field(EGU, "°C")
+}
+
+#choose high temperature limit for the thermocouple type
+record(sel, "${P}${R}HI_${N}")
+{
+        field(NVL, "${P}${R}Type_${N} CP")        
+        field(SELM, "Specified")   
+	field(INPA, "0")
+	field(INPB, "760")
+	field(INPC, "1370")
+	field(INPD, "400")
+	field(INPE, "1000")
+	field(INPF, "1750")
+	field(INPG, "1750")	
+	field(INPH, "1800")	
+        field(EGU, "°C")
+}
+
+#calcultae temperature from raw readout based on thermocouple type
+record(calc, "${P}${R}TEMP_${N}")
+{
+        field(INPA, "${P}${R}CH_${N} CP")
+        field(INPB, "65535")
+        field(INPC, "${P}${R}LO_${N} CP")
+        field(INPD, "${P}${R}HI_${N} CP")
+        field(CALC, "(D-C)*A/B+C")
+        field(EGU, "°C")
+        field(PREC, "1")
+#        field(SCAN, "1 second")
+}
+
+
+####### CS-Studio records ########
+#these records are used by controls and indicators. They are not required if you do not use CSS
+
+#shows the type of the thermocouple
+record(mbbi, "${P}${R}TypeStr_${N}")
+{
+        field(INP, "${P}${R}Type_${N} CP")              
+	field(ZRST, "Error")
+	field(ONST, "Type J")
+	field(TWST, "Type K")
+	field(THST, "Type T")
+	field(FRST, "Type E")
+	field(FVST, "Type R")
+	field(SXST, "Type S")	
+	field(SVST, "Type B")	
+	
+}
+
+#drop down selection to change the type of the thermocouple
+record(mbbi, "${P}${R}TypeSel_${N}")
+{              
+	field(ZRST, "Select")
+	field(ONST, "Type J")
+	field(TWST, "Type K")
+	field(THST, "Type T")
+	field(FRST, "Type E")
+	field(FVST, "Type R")
+	field(SXST, "Type S")	
+	field(SVST, "Type B")	
+}
+
+#converts selected type to MODBUS value
+record(sel, "${P}${R}SEL_${N}")
+{
+        field(NVL, "${P}${R}TypeSel_${N} CP")        
+        field(SELM, "Specified")   
+	field(INPA, "0")        
+	field(INPB, "1024")
+	field(INPC, "1056")
+	field(INPD, "1088")
+	field(INPE, "1120")
+	field(INPF, "1152")
+	field(INPG, "1184")
+	field(INPH, "1216")
+    	field(PINI, "NO")	
+}
+
+#send the converted type to the output record
+#mbbi in the display is not initialized at the beginning (set to 0). 0 will cause MODBUS write error. Disable the record by DISV if value is 0.
+record(seq, "${P}${R}SEQ_${N}")
+{
+	field(DOL1, "${P}${R}SEL_${N} CP")
+	field(LNK1, "${P}${R}TypeSet_${N} CPP")	
+	field(DLY1, "0.1")	
+    	field(PINI, "NO")	
+	field(SCAN, "Passive")	
+	field(DISV, "0")
+	field(SDIS, "${P}${R}SEL_${N}")
+}

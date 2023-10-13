@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Saved on 2023-10-12 17:53:58 by hegny-->
+<display version="2.0.0">
+  <name>Display</name>
+  <width>270</width>
+  <height>20</height>
+  <widget type="label" version="2.0.0">
+    <name>Label_24</name>
+    <text>$(N)</text>
+    <width>20</width>
+    <vertical_alignment>1</vertical_alignment>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_5</name>
+    <pv_name>$(P)$(R)TEMP_$(N)</pv_name>
+    <x>30</x>
+    <width>70</width>
+    <horizontal_alignment>2</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_15</name>
+    <pv_name>$(P)$(R)TypeStr_$(N)</pv_name>
+    <x>120</x>
+    <width>60</width>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>Combo Box</name>
+    <pv_name>$(P)$(R)TypeSel_$(N)</pv_name>
+    <x>190</x>
+    <width>80</width>
+    <height>20</height>
+    <items>
+      <item> </item>
+    </items>
+  </widget>
+</display>
